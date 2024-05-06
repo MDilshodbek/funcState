@@ -3,10 +3,11 @@ import "./App.css";
 import {
   EditOutlined,
   SettingOutlined,
-  DeleteOutlined,
+  // DeleteOutlined,
   SaveOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
-import { Avatar, Card, Input, Skeleton, Button } from "antd";
+import { Avatar, Card, Input, Skeleton, Button, Dropdown, Menu } from "antd";
 const { Meta } = Card;
 // import Homework from "./homework";
 import axios from "axios";
@@ -42,10 +43,12 @@ function App() {
     setNewTitle(currentTitle);
   };
 
-  const onSaveEdit = (id) => {
+  const onSaveEdit = (id, editedTitle) => {
     // Update the title of the item with the new title
     setData(
-      data.map((item) => (item.id === id ? { ...item, title: newTitle } : item))
+      data.map((item) =>
+        item.id === id ? { ...item, title: editedTitle } : item
+      )
     );
     setEditingId(null); // Reset editing state
   };
@@ -53,6 +56,7 @@ function App() {
   const toggleSkeleton = () => {
     setLoading(!loading); // Toggle the state of the loading skeleton
   };
+
   return (
     <div className="flex justify-center items-center">
       {/* <div className="flex gap-[20px] items-center justify-center">
@@ -97,13 +101,57 @@ function App() {
                 />
               )
             }
+            // actions={[
+            //   <SettingOutlined key="setting" />,
+            //   editingId === value.id ? (
+            //     <>
+            //       <Input />
+            //       <SaveOutlined
+            //         onClick={() => onSaveEdit(value.id, newTitle)}
+            //         key="save"
+            //       />
+            //     </>
+            //   ) : (
+            //     <EditOutlined
+            //       onClick={() => onEdit(value.id, value.title)}
+            //       key="edit"
+            //     />
+            //   ),
+            //   <Dropdown
+            //     overlay={
+            //       <Menu>
+            //         <Menu.Item key="delete">
+            //           <Button type="text" onClick={() => onDelete(value.id)}>
+            //             Delete
+            //           </Button>
+            //         </Menu.Item>
+            //         <Menu.Item key="edit">
+            //           <Button
+            //             type="text"
+            //             onClick={() => onEdit(value.id, value.title)}
+            //           >
+            //             Edit
+            //           </Button>
+            //         </Menu.Item>
+            //       </Menu>
+            //     }
+            //     trigger={["click"]}
+            //   >
+            //     <Button>
+            //       <DownOutlined />
+            //     </Button>
+            //   </Dropdown>,
+            // ]}
             actions={[
               <SettingOutlined key="setting" />,
               editingId === value.id ? (
                 <>
-                  <Input />
+                  <Input
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                  />
                   <SaveOutlined
-                    onClick={() => onSaveEdit(value.id)}
+                    onClick={() => onSaveEdit(value.id, newTitle)}
                     key="save"
                   />
                 </>
@@ -113,11 +161,30 @@ function App() {
                   key="edit"
                 />
               ),
-
-              <DeleteOutlined
-                onClick={() => onDelete(value.id)}
-                key="delete"
-              />,
+              <Dropdown
+                overlay={
+                  <Menu>
+                    <Menu.Item key="delete">
+                      <Button type="text" onClick={() => onDelete(value.id)}>
+                        Delete
+                      </Button>
+                    </Menu.Item>
+                    <Menu.Item key="edit">
+                      <Button
+                        type="text"
+                        onClick={() => onEdit(value.id, value.title)}
+                      >
+                        Edit
+                      </Button>
+                    </Menu.Item>
+                  </Menu>
+                }
+                trigger={["click"]}
+              >
+                <Button>
+                  <DownOutlined />
+                </Button>
+              </Dropdown>,
             ]}
           >
             <Meta
