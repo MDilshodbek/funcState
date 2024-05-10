@@ -1,201 +1,107 @@
-import { useEffect, useState } from "react";
 import "./App.css";
-import {
-  EditOutlined,
-  SettingOutlined,
-  // DeleteOutlined,
-  SaveOutlined,
-  DownOutlined,
-} from "@ant-design/icons";
-import { Avatar, Card, Input, Skeleton, Button, Dropdown, Menu } from "antd";
-const { Meta } = Card;
-// import Homework from "./homework";
-import axios from "axios";
+import { Button } from "antd";
+import { useEffect, useState, useRef } from "react";
+import { v4 } from "uuid";
 
 function App() {
-  const [data, setData] = useState([]);
-  const [editingId, setEditingId] = useState(null);
-  const [newTitle, setNewTitle] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [second, setSecond] = useState(0);
+  const [minute, setMinute] = useState(0);
+  const [hour, setHour] = useState(0);
+  const [running, setRunning] = useState(false);
+  const timerRef = useRef(null);
+  const [Lap, setLap] = useState([]);
+
+  // className="flex items-center justify-center"
+  // className="w-[500px] h-[500px] bg-orange-500 mt-52"
+  // className="flex justify-center gap-[10px] text-7xl w-full mt-[20px]"
+  // className="w-[80%] flex justify-between m-auto mt-[20px]"
+
+  const changeSecond = (previous) => {
+    if (previous === 59) {
+      setMinute(changeMinute);
+      return 0;
+    }
+
+    return previous + 1;
+  };
+
+  const changeMinute = (previous) => {
+    if (previous === 59) {
+      setHour((previous) => {
+        return previous + 1;
+      });
+      return 0;
+    }
+
+    return previous + 1;
+  };
+
+  const reset = () => {
+    setSecond(0);
+    setMinute(0);
+    setHour(0);
+  };
+
+  const onLap = () => {
+    setLap((previous) => {
+      return [
+        ...previous,
+        {
+          hour,
+          minute,
+          second,
+          id: v4(),
+        },
+      ];
+    });
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(
-          "https://jsonplaceholder.typicode.com/posts"
-        );
-        setData(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
+    if (running)
+      timerRef.current = setInterval(() => {
+        setSecond(changeSecond);
+      }, 1000);
+    else clearInterval(timerRef.current);
+  }, [running]);
 
-    fetchData();
-  }, []);
-
-  const onDelete = (id) => {
-    setData(data.filter((value) => value.id !== id));
-  };
-
-  const onEdit = (id, currentTitle) => {
-    setEditingId(id);
-    setNewTitle(currentTitle);
-  };
-
-  const onSaveEdit = (id, editedTitle) => {
-    // Update the title of the item with the new title
-    setData(
-      data.map((item) =>
-        item.id === id ? { ...item, title: editedTitle } : item
-      )
-    );
-    setEditingId(null); // Reset editing state
-  };
-
-  const toggleSkeleton = () => {
-    setLoading(!loading); // Toggle the state of the loading skeleton
+  const formatNumber = (num) => {
+    return String(num).padStart(2, "0");
   };
 
   return (
-    <div className="flex justify-center items-center">
-      {/* <div className="flex gap-[20px] items-center justify-center">
-        <Button type="primary" danger onClick={decrement}>
-          -
-        </Button>
-        {count}
-        <Button type="primary" onClick={increment}>
-          +
-        </Button>
-      </div>
-      <div className="flex gap-[20px] items-center justify-center">
-        <Button type="primary" danger onClick={() => setCount2(count2 - 1)}>
-          -2
-        </Button>
-        {count2}
-        <Button type="primary" onClick={() => setCount2(count2 + 1)}>
-          +2
-        </Button>
-      </div> */}
-      <Button onClick={toggleSkeleton} style={{ marginBottom: "20px" }}>
-        {loading ? "Turn Off Skeleton" : "Turn On Skeleton"}
-      </Button>
-      {data.map((value) => {
-        return (
-          <Card
-            key={value.id}
-            style={{
-              width: 300,
-            }}
-            cover={
-              loading ? (
-                <Skeleton.Image
-                  active
-                  style={{ width: "100%", height: "150px", objectFit: "cover" }}
-                />
-              ) : (
-                <img
-                  alt="example"
-                  src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
-                  style={{ width: "100%", height: "150px", objectFit: "cover" }}
-                />
-              )
-            }
-            // actions={[
-            //   <SettingOutlined key="setting" />,
-            //   editingId === value.id ? (
-            //     <>
-            //       <Input />
-            //       <SaveOutlined
-            //         onClick={() => onSaveEdit(value.id, newTitle)}
-            //         key="save"
-            //       />
-            //     </>
-            //   ) : (
-            //     <EditOutlined
-            //       onClick={() => onEdit(value.id, value.title)}
-            //       key="edit"
-            //     />
-            //   ),
-            //   <Dropdown
-            //     overlay={
-            //       <Menu>
-            //         <Menu.Item key="delete">
-            //           <Button type="text" onClick={() => onDelete(value.id)}>
-            //             Delete
-            //           </Button>
-            //         </Menu.Item>
-            //         <Menu.Item key="edit">
-            //           <Button
-            //             type="text"
-            //             onClick={() => onEdit(value.id, value.title)}
-            //           >
-            //             Edit
-            //           </Button>
-            //         </Menu.Item>
-            //       </Menu>
-            //     }
-            //     trigger={["click"]}
-            //   >
-            //     <Button>
-            //       <DownOutlined />
-            //     </Button>
-            //   </Dropdown>,
-            // ]}
-            actions={[
-              <SettingOutlined key="setting" />,
-              editingId === value.id ? (
-                <>
-                  <Input
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                  />
-                  <SaveOutlined
-                    onClick={() => onSaveEdit(value.id, newTitle)}
-                    key="save"
-                  />
-                </>
-              ) : (
-                <EditOutlined
-                  onClick={() => onEdit(value.id, value.title)}
-                  key="edit"
-                />
-              ),
-              <Dropdown
-                overlay={
-                  <Menu>
-                    <Menu.Item key="delete">
-                      <Button type="text" onClick={() => onDelete(value.id)}>
-                        Delete
-                      </Button>
-                    </Menu.Item>
-                    <Menu.Item key="edit">
-                      <Button
-                        type="text"
-                        onClick={() => onEdit(value.id, value.title)}
-                      >
-                        Edit
-                      </Button>
-                    </Menu.Item>
-                  </Menu>
-                }
-                trigger={["click"]}
-              >
-                <Button>
-                  <DownOutlined />
-                </Button>
-              </Dropdown>,
-            ]}
+    <div id="main">
+      <div className="flex flex-col items-center">
+        <div className="flex">
+          <h3>{formatNumber(hour)}</h3>:<h3>{formatNumber(minute)}</h3>:
+          <h3>{formatNumber(second)}</h3>
+        </div>
+        <div className="buttons">
+          <Button
+            type="primary"
+            onClick={onLap}
+            disabled={hour === 0 && minute === 0 && second === 0}
           >
-            <Meta
-              avatar={
-                <Avatar src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />
-              }
-              title={loading || editingId === value.id ? null : value.title}
-            />
-          </Card>
-        );
-      })}
+            Lap
+          </Button>
+          {running ? (
+            <Button onClick={() => setRunning(false)}>Pause</Button>
+          ) : (
+            <Button onClick={() => setRunning(true)}>Start</Button>
+          )}
+          <Button danger type="primary" onClick={reset}>
+            Restart
+          </Button>
+        </div>
+        <div className="lapp">
+          {Lap.map(({ id, hour, minute, second }) => {
+            return (
+              <div key={id} className="history">
+                <h3>{hour}</h3>:<h3>{minute}</h3>:<h3>{second}</h3>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
